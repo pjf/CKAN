@@ -18,3 +18,5 @@ deploy:
   file: ckan.exe
   on:
     repo: pjf/CKAN
+    tags: true
+    all_branches: true
