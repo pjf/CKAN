@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System;
 using CKAN;
 using Tests;
+using Newtonsoft.Json.Linq;
 
 namespace CKANTests
 {
@@ -31,6 +32,28 @@ namespace CKANTests
 
             // TODO: Test all the metadata here!
             Assert.AreEqual("https://github.com/KSP-KOS/KOS/issues", module.resources.bugtracker.ToString());
+        }
+
+        [Test][Ignore("Doesn't work")]
+        public void DieOnBadInstallStanza()
+        {
+            JObject metadata = JObject.Parse(TestData.kOS_014());
+
+            // Make sure we can form an object with good metadata.
+            Assert.DoesNotThrow(delegate
+            {
+                CkanModule.FromJson(metadata.ToString());
+            });
+
+            // Purposefully corrupt our metadata.
+            ((JObject)metadata["install"][0]).Remove("file");
+
+            Console.WriteLine(metadata.ToString());
+
+            Assert.Throws<Kraken>(delegate
+            {
+                CkanModule.FromJson(metadata.ToString());
+            }); 
         }
 
         [Test]

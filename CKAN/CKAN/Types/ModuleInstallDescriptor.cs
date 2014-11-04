@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 
 namespace CKAN
 {
+    /// <summary>
+    /// This class describes module install "stanzas" as found in CKAN documents.
+    /// </summary>
+
     public class ModuleInstallDescriptor
     {
         public /* required */ string file;
@@ -16,6 +20,12 @@ namespace CKAN
         [JsonConverter(typeof (JsonSingleOrArrayConverter<string>))]
         public List<string> filter_regexp;
 
+        [JsonConverter(typeof (JsonSingleOrArrayConverter<string>))]
+        public List<string> include_only;
+
+        [JsonConverter(typeof (JsonSingleOrArrayConverter<string>))]
+        public List<string> include_only_regexp;
+
         [OnDeserialized]
         internal void DeSerialisationFixes(StreamingContext like_i_could_care)
         {
@@ -23,6 +33,24 @@ namespace CKAN
             if (file == null || install_to == null)
             {
                 throw new BadMetadataKraken(null, "Install stanzas must have a file and install_to");
+            }
+
+            // I don't know why we end up with uninitialised fields here if they're absent
+            // from the metadata, but resources seems to. In any case, make sure they're
+            // all set to something sensible.
+
+            filter              = filter              ?? new List<string>();
+            filter_regexp       = filter_regexp       ?? new List<string>();
+            include_only        = include_only        ?? new List<string>();
+            include_only_regexp = include_only_regexp ?? new List<string>();
+
+            if (
+                // Don't mix filters and includes, mmkay?
+                (filter.Count != 0       || filter_regexp.Count != 0) &&
+                (include_only.Count != 0 || include_only_regexp.Count != 0)
+            )
+            {
+                throw new BadMetadataKraken(null, "Mixed filters and include stanzas in install section");
             }
         }
 
@@ -33,10 +61,6 @@ namespace CKAN
         {
             // Make sure our path always uses slashes we expect.
             string normalised_path = path.Replace('\\', '/');
-
-            // Make sure our internal state is consistent. Is there a better way of doing this?
-            filter = filter ?? new List<string> ();
-            filter_regexp = filter_regexp ?? new List<string> ();
 
             // We want everthing that matches our 'file', either as an exact match,
             // or as a path leading up to it.

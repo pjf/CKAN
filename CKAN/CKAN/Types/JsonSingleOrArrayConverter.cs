@@ -20,17 +20,22 @@ namespace CKAN
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             JToken token = JToken.Load(reader);
+
+            // If we have an array, convert it to a list of things.
             if (token.Type == JTokenType.Array)
             {
                 return token.ToObject<List<T>>();
             }
 
-            // If the object is null, we'll return null. Otherwise end up with a list of null.
-            if (token.ToObject<T>() == null)
-            {
-                return null;
-            }
+            // If the object is null, we'll return an empty list.
+            // This also means we have defined by empty lists for stanzas which weren't defined,
+            // which is almost alays what we want.
+            // if (token.ToObject<T>() == null)
+            // {
+            //    return new List<T> ();
+            // }
 
+            // Otherwise, return the thing wrapped in a list.
             return new List<T> { token.ToObject<T>() };
         }
 
