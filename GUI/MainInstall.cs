@@ -26,7 +26,7 @@ namespace CKAN
         public readonly Dictionary<string, List<string>> suggested = new Dictionary<string, List<string>>();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mods_with_changes"></param>
         /// <param name="installer">Assumes that the User properly uses the invoke methods</param>
@@ -61,7 +61,7 @@ namespace CKAN
                 }
             }
 
-            //Construct the lists of recommended and suggested mods. 
+            //Construct the lists of recommended and suggested mods.
             foreach (
                 var ckan_module in
                     mods_with_changes.Where(change => change.Value == GUIModChangeType.Install).Select(change => change.Key))
@@ -95,7 +95,7 @@ namespace CKAN
                         !registry.IsInstalled(mod.name) &&
                         !to_install.Contains(mod.name))
                     {
-                        // add it to the list of mods we display to the user                                    
+                        // add it to the list of mods we display to the user
                         dictionary.AppendItemOrAddNewList(mod.name, endorser);
                     }
                 }
@@ -221,7 +221,7 @@ namespace CKAN
         // this may happen on the recommended/suggested mods dialogs
         private volatile bool install_canceled;
 
-        // this will be the final list of mods we want to install 
+        // this will be the final list of mods we want to install
         private MainInstall main_install;
         private readonly TabController tab_controller;
 
@@ -234,7 +234,7 @@ namespace CKAN
             install_worker = new BackgroundWorker {WorkerReportsProgress = true, WorkerSupportsCancellation = true};
             install_worker.DoWork += InstallMods;
 
-            // TODO. The remaining usages of main are as follows.            
+            // TODO. The remaining usages of main are as follows.
             // main.ClearLog();
             // main.SetDescription()
             // main.AddStatusMessage()
@@ -249,7 +249,7 @@ namespace CKAN
             // main.RecommendedModsListView.Columns[1].Text
             // main.RecommendedModsListView.Items.Clear()
             // main.RecommendedModsListView.Items.Add(item)
-            // Consider either a move of these into this class or grouping them into interfaces which are passed in. 
+            // Consider either a move of these into this class or grouping them into interfaces which are passed in.
         }
 
 
@@ -257,7 +257,7 @@ namespace CKAN
         {
             var opts = (KeyValuePair<List<ModWithChangeType>, RelationshipResolverOptions>) e.Argument;
 
-            main.ClearLog();            
+            main.ClearLog();
             main_install = new MainInstall(opts.Key, ModuleInstaller.GetInstance(ksp_instance, GUI.user),
                 RegistryManager.Instance(ksp_instance).registry, ksp_instance.Version());
             main_install.Start();
@@ -313,7 +313,7 @@ namespace CKAN
                     var ret = main_install.InstallList(opts.Value, downloader, GUI.user, ModuleInstaller.GetInstance(ksp_instance, GUI.user));
                     if (!ret)
                     {
-                        // install failed for some reason, error message is already displayed to the user                    
+                        // install failed for some reason, error message is already displayed to the user
                         e.Result = new KeyValuePair<bool, List<ModWithChangeType>>(false,
                             opts.Key);
                         return;
@@ -401,12 +401,10 @@ namespace CKAN
 
         internal void ChooseProvidedModsContinueButton_Click(object sender, EventArgs e)
         {
-            toomany_source.SetResult(
-                main.ChooseProvidedModsListView.Items.Cast<ListViewItem>()
-                    .First(item => item.Checked)
-                    .Select(item => item.Tag));
+            toomany_source.SetResult((CkanModule) main.ChooseProvidedModsListView.Items.Cast<ListViewItem>()
+                    .First(item => item.Checked).Tag);
             }
-        }
+
 
         private void UpdateRecommendedDialog(Dictionary<string, List<string>> mods, bool suggested = false)
         {
